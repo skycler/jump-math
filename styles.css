@@ -248,22 +248,21 @@ body {
 .secondary-btn {
     padding: 14px 45px;
     font-size: 1.1rem;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: #fff;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: none;
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: 600;
     letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
 }
 
 .secondary-btn:hover {
-    background: rgba(255,255,255,0.2);
-    border-color: rgba(255,255,255,0.5);
+    background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
 .controls-info {
