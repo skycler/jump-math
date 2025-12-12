@@ -2,15 +2,20 @@
 
 A fun 2D jump and run platformer game with math puzzles! Collect coins and avoid obstacles while solving multiplication problems.
 
+🎮 **[Play Now](https://skycler.github.io/jump-math/)**
+
 ## Features
 
 - **Three Themes**: Forest 🌲, Snowy Mountains 🏔️, Beach 🏖️
+- **Theme-Specific Obstacles**:
+  - 🌲 Forest: Fallen logs, angry bees
+  - 🏔️ Snow: Ice blocks, rolling snowballs  
+  - 🏖️ Beach: Sandcastles, scuttling crabs
+- **Platforms**: Jump on platforms to reach coins higher up
+- **Sound Effects**: Audio feedback for jumps, correct/wrong answers
 - **Controls**: 
   - ⬆️ / Space - Jump
   - ⬅️ ➡️ - Move left/right
-- **Obstacles**: 
-  - Static obstacles (rocks, boxes)
-  - Dynamic obstacles (moving spiky balls)
 - **Scoring System**:
   - Collect coins → Solve math puzzle → Correct answer = +1 point
   - Touch obstacle → Solve math puzzle → Wrong answer = -1 point
@@ -51,7 +56,7 @@ A fun 2D jump and run platformer game with math puzzles! Collect coins and avoid
 The game is a pure static web app. Just upload these files to any web server:
 - `index.html`
 - `styles.css`
-- `game.js`
+- `js/` folder (all JavaScript modules)
 - `manifest.json`
 - `sw.js`
 - `icons/` folder
@@ -96,30 +101,53 @@ The `icons/icon.svg` file is included as the source. To generate PNG icons for t
 
 ```
 jump-math/
-├── index.html      # Main HTML file
-├── styles.css      # Styling
-├── game.js         # Game logic
-├── manifest.json   # PWA manifest
-├── sw.js           # Service worker for offline support
-├── icons/          # App icons
-│   └── icon.svg    # Source icon
-└── README.md       # This file
+├── index.html          # Main HTML file
+├── styles.css          # Styling
+├── manifest.json       # PWA manifest
+├── sw.js               # Service worker for offline support
+├── js/
+│   ├── config.js       # Game settings & theme definitions
+│   ├── audio.js        # Web Audio API sound system
+│   ├── entities.js     # Player, Coin, Obstacle, Platform classes
+│   ├── engine.js       # Game loop, spawning, collision, rendering
+│   ├── ui.js           # Puzzle modal, menus, HUD
+│   └── main.js         # Entry point & initialization
+├── icons/              # App icons
+│   └── icon.svg        # Source icon
+├── .github/
+│   └── workflows/
+│       └── deploy.yml  # GitHub Actions deployment
+└── README.md           # This file
 ```
 
 ## Customization
 
 ### Math Operations
 
-Currently the game uses multiplication. To add other operations, modify the `generateMathPuzzle()` function in `game.js`.
+Currently the game uses multiplication. To add other operations, modify the `generateMathPuzzle()` function in `js/ui.js`.
 
 ### Difficulty
 
-Adjust these constants in `game.js`:
+Adjust these constants in `js/config.js`:
 - `CONFIG.gravity` - How fast player falls
 - `CONFIG.jumpForce` - How high player jumps
-- `CONFIG.coinSpawnRate` - How often coins appear
+- `CONFIG.coinSpawnRate` - How often coins appear (in frames)
 - `CONFIG.obstacleSpawnRate` - How often obstacles appear
+- `CONFIG.platformSpawnRate` - How often platforms appear
 - `CONFIG.scrollSpeed` - How fast the world scrolls
+
+### Adding Themes
+
+Add new themes in `js/config.js` by extending the `THEMES` object with:
+- Sky gradient colors
+- Ground colors
+- Platform colors
+- Obstacle types and colors
+- Decoration emojis
+
+### Adding Sounds
+
+Modify `js/audio.js` to add new sound effects using the Web Audio API oscillator.
 
 ## License
 
