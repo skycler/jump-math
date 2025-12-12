@@ -201,6 +201,74 @@ body {
     transform: scale(1.05);
 }
 
+/* Game Mode Selection */
+.mode-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    padding: 14px 25px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
+
+.mode-btn:hover {
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+}
+
+.mode-btn.selected {
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    border-color: #fff;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.mode-config {
+    color: #fff;
+    text-align: center;
+}
+
+.mode-inputs {
+    margin: 15px 0;
+}
+
+.mode-inputs select {
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.95);
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-inputs select:focus {
+    outline: none;
+    border-color: #fff;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.2);
+}
+
+.mode-desc {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    font-style: italic;
+    margin-top: 10px;
+}
+
 .primary-btn {
     padding: 18px 60px;
     font-size: 1.4rem;
@@ -314,6 +382,15 @@ body {
 
 #score {
     font-weight: bold;
+    min-width: 120px;
+}
+
+#timer {
+    font-weight: bold;
+    font-size: 1.3rem;
+    background: rgba(255,255,255,0.15);
+    padding: 5px 15px;
+    border-radius: 20px;
 }
 
 #pause-btn {

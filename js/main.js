@@ -20,7 +20,14 @@ const game = {
     decorations: [],
     keys: {},
     pendingPuzzle: null,
-    puzzleType: null
+    puzzleType: null,
+    // Game mode settings
+    gameMode: 'timed', // 'timed' or 'target'
+    timeLimit: 120,    // seconds for timed mode
+    targetScore: 10,   // points for target mode
+    timeRemaining: 0,  // seconds remaining (timed mode)
+    timeElapsed: 0,    // seconds elapsed (target mode)
+    lastTimestamp: 0   // for timer calculation
 };
 
 // Input Handlers
@@ -91,6 +98,21 @@ function startGame() {
         [game.mathMin, game.mathMax] = [game.mathMax, game.mathMin];
     }
     
+    // Get game mode settings
+    game.gameMode = document.querySelector('.mode-btn.selected')?.dataset.mode || 'timed';
+    game.timeLimit = parseInt(document.getElementById('time-limit').value) || 120;
+    game.targetScore = parseInt(document.getElementById('target-score').value) || 10;
+    
+    // Initialize timer based on mode
+    if (game.gameMode === 'timed') {
+        game.timeRemaining = game.timeLimit;
+        game.timeElapsed = 0;
+    } else {
+        game.timeRemaining = 0;
+        game.timeElapsed = 0;
+    }
+    game.lastTimestamp = Date.now();
+    
     // Reset game state
     game.score = 0;
     game.frameCount = 0;
@@ -135,6 +157,20 @@ function initGame() {
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             game.theme = btn.dataset.theme;
+        });
+    });
+    
+    // Mode buttons
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            // Show/hide mode config
+            document.getElementById('mode-config-timed').style.display = 
+                btn.dataset.mode === 'timed' ? 'block' : 'none';
+            document.getElementById('mode-config-target').style.display = 
+                btn.dataset.mode === 'target' ? 'block' : 'none';
         });
     });
     

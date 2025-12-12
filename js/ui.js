@@ -81,16 +81,46 @@ const UI = {
             game.pendingPuzzle = null;
             game.puzzleType = null;
             
-            // Check for game over
+            // Check for game over (negative score) or victory (target mode)
             if (game.score < -5) {
-                this.gameOver(game);
+                this.gameOver(game, false);
+            } else if (game.gameMode === 'target' && game.score >= game.targetScore) {
+                this.gameOver(game, true);
             }
         }, 1500);
     },
 
     // Update Score Display
     updateScoreDisplay(game) {
-        document.getElementById('score').textContent = `Score: ${game.score}`;
+        const scoreText = game.gameMode === 'target' 
+            ? `Score: ${game.score} / ${game.targetScore}`
+            : `Score: ${game.score}`;
+        document.getElementById('score').textContent = scoreText;
+    },
+    
+    // Update Timer Display
+    updateTimerDisplay(game) {
+        const timerEl = document.getElementById('timer');
+        let seconds, prefix;
+        
+        if (game.gameMode === 'timed') {
+            seconds = Math.max(0, Math.ceil(game.timeRemaining));
+            prefix = '⏱️';
+        } else {
+            seconds = Math.floor(game.timeElapsed);
+            prefix = '⏱️';
+        }
+        
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerEl.textContent = `${prefix} ${mins}:${secs.toString().padStart(2, '0')}`;
+    },
+    
+    // Format time for display
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     },
 
     // Show Menu
@@ -101,9 +131,37 @@ const UI = {
     },
 
     // Game Over
-    gameOver(game) {
+    gameOver(game, isVictory = false) {
         game.running = false;
+        
+        const titleEl = document.getElementById('gameover-title');
+        const messageEl = document.getElementById('gameover-message');
+        const finalTimeEl = document.getElementById('final-time');
+        const finalTimeValue = document.getElementById('final-time-value');
+        
         document.getElementById('final-score').textContent = game.score;
+        
+        if (game.gameMode === 'timed') {
+            titleEl.textContent = "⏱️ Time's Up!";
+            messageEl.textContent = `You scored ${game.score} points in ${this.formatTime(game.timeLimit)}!`;
+            finalTimeEl.style.display = 'none';
+        } else if (game.gameMode === 'target') {
+            if (isVictory) {
+                titleEl.textContent = '🎉 Target Reached!';
+                messageEl.textContent = 'Congratulations!';
+                finalTimeEl.style.display = 'block';
+                finalTimeValue.textContent = this.formatTime(game.timeElapsed);
+            } else {
+                titleEl.textContent = '💀 Game Over!';
+                messageEl.textContent = `You didn't reach the target of ${game.targetScore} points.`;
+                finalTimeEl.style.display = 'none';
+            }
+        } else {
+            titleEl.textContent = 'Game Over!';
+            messageEl.textContent = '';
+            finalTimeEl.style.display = 'none';
+        }
+        
         document.getElementById('gameover-modal').classList.add('active');
     },
 

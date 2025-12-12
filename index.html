@@ -32,6 +32,37 @@
                     </div>
                 </div>
             </div>
+            <div class="menu-section">
+                <h2>Game Mode</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn selected" data-mode="timed">⏱️ Timed Challenge</button>
+                    <button class="mode-btn" data-mode="target">🎯 Target Score</button>
+                </div>
+                <div id="mode-config-timed" class="mode-config">
+                    <label>Time Limit:</label>
+                    <div class="mode-inputs">
+                        <select id="time-limit">
+                            <option value="60">1 minute</option>
+                            <option value="120" selected>2 minutes</option>
+                            <option value="180">3 minutes</option>
+                            <option value="300">5 minutes</option>
+                        </select>
+                    </div>
+                    <p class="mode-desc">Score as many points as possible before time runs out!</p>
+                </div>
+                <div id="mode-config-target" class="mode-config" style="display: none;">
+                    <label>Target Score:</label>
+                    <div class="mode-inputs">
+                        <select id="target-score">
+                            <option value="5">5 points</option>
+                            <option value="10" selected>10 points</option>
+                            <option value="15">15 points</option>
+                            <option value="20">20 points</option>
+                        </select>
+                    </div>
+                    <p class="mode-desc">Reach the target as fast as possible!</p>
+                </div>
+            </div>
             <button id="start-btn" class="primary-btn">Start Game</button>
             <div class="controls-info">
                 <h3>Controls</h3>
@@ -43,6 +74,7 @@
         <div id="game-screen" class="screen">
             <div id="hud">
                 <div id="score">Score: 0</div>
+                <div id="timer">⏱️ 2:00</div>
                 <div id="theme-display"></div>
                 <button id="pause-btn">⏸️</button>
             </div>
@@ -74,8 +106,10 @@
 
         <div id="gameover-modal" class="modal">
             <div class="modal-content">
-                <h2>Game Over!</h2>
+                <h2 id="gameover-title">Game Over!</h2>
+                <p id="gameover-message"></p>
                 <p>Final Score: <span id="final-score">0</span></p>
+                <p id="final-time" style="display: none;">Time: <span id="final-time-value">0:00</span></p>
                 <button id="retry-btn" class="primary-btn">Play Again</button>
                 <button id="menu-btn" class="secondary-btn">Main Menu</button>
             </div>

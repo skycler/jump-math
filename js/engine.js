@@ -96,6 +96,32 @@ const GameEngine = {
     update(game) {
         game.frameCount++;
         
+        // Update timer (runs even during puzzles)
+        const now = Date.now();
+        const deltaSeconds = (now - game.lastTimestamp) / 1000;
+        game.lastTimestamp = now;
+        
+        if (game.gameMode === 'timed') {
+            game.timeRemaining -= deltaSeconds;
+            UI.updateTimerDisplay(game);
+            
+            // Check time's up
+            if (game.timeRemaining <= 0) {
+                game.timeRemaining = 0;
+                UI.gameOver(game, false);
+                return;
+            }
+        } else if (game.gameMode === 'target') {
+            game.timeElapsed += deltaSeconds;
+            UI.updateTimerDisplay(game);
+            
+            // Check target reached
+            if (game.score >= game.targetScore) {
+                UI.gameOver(game, true);
+                return;
+            }
+        }
+        
         // Update player
         game.player.update(game);
         
