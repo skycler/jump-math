@@ -109,11 +109,14 @@ jump-math/
 │   ├── config.js       # Game settings & theme definitions
 │   ├── audio.js        # Web Audio API sound system
 │   ├── entities/       # Game entity classes
+│   │   ├── renderers/  # Rendering abstraction layer
+│   │   │   ├── obstacle-renderers.js   # Obstacle renderer interface & factories
+│   │   │   └── decoration-renderers.js # Decoration renderer interface & factories
 │   │   ├── player.js   # Player movement, jumping, collision
 │   │   ├── coin.js     # Collectible coins with bobbing animation
-│   │   ├── obstacle.js # Theme-specific static & dynamic obstacles
+│   │   ├── obstacle.js # Obstacle entity (uses renderer factory)
 │   │   ├── platform.js # Jumpable platforms with theme decorations
-│   │   └── decoration.js # Background decorations (trees, palms, etc.)
+│   │   └── decoration.js # Decoration entity (uses renderer factory)
 │   ├── engine.js       # Game loop, spawning, collision, rendering
 │   ├── ui.js           # Puzzle modal, menus, HUD
 │   └── main.js         # Entry point & initialization
@@ -124,6 +127,32 @@ jump-math/
 │       └── deploy.yml  # GitHub Actions deployment
 └── README.md           # This file
 ```
+
+## Architecture
+
+### Renderer Pattern
+
+The game uses an **Interface + Factory** pattern for theme-specific rendering:
+
+```
+ObstacleRenderer (abstract)     DecorationRenderer (abstract)
+       │                               │
+       ├── BeeRenderer                 ├── TreeRenderer
+       ├── WolfRenderer                ├── PineRenderer
+       ├── CrabRenderer                ├── PalmRenderer
+       ├── SnowballRenderer            ├── SnowmanRenderer
+       ├── LogRenderer                 ├── BushRenderer
+       └── ...                         └── UmbrellaRenderer
+
+ObstacleRendererFactory         DecorationRendererFactory
+  └── getRenderer(type)           └── getRenderer(type)
+```
+
+**Benefits:**
+- Each renderer is self-contained and focused
+- Adding new obstacles/decorations = adding new renderer class
+- Renderers are cached for performance
+- Entity classes stay simple, delegating drawing to renderers
 
 ## Customization
 
@@ -148,7 +177,33 @@ Add new themes in `js/config.js` by extending the `THEMES` object with:
 - Ground colors
 - Platform colors
 - Obstacle types and colors
-- Decoration emojis
+- Decoration types
+
+### Adding New Obstacles
+
+1. Create a new renderer class in `js/entities/renderers/obstacle-renderers.js`:
+   ```javascript
+   class MyObstacleRenderer extends ObstacleRenderer {
+       draw(ctx, x, y, width, height, frameCount) {
+           // Your drawing code here
+       }
+   }
+   ```
+2. Register it in `ObstacleRendererFactory.getRenderer()` switch statement
+3. Reference the type in your theme's `obstacles.dynamicType` or `obstacles.staticType`
+
+### Adding New Decorations
+
+1. Create a new renderer class in `js/entities/renderers/decoration-renderers.js`:
+   ```javascript
+   class MyDecorationRenderer extends DecorationRenderer {
+       draw(ctx, x, groundY, animOffset) {
+           // Your drawing code here
+       }
+   }
+   ```
+2. Register it in `DecorationRendererFactory.getRenderer()` switch statement
+3. Add the type to your theme's `decorations` array in `js/config.js`
 
 ### Adding Sounds
 

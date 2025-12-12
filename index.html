@@ -85,6 +85,9 @@
     <!-- Game Scripts (load in order) -->
     <script src="js/config.js"></script>
     <script src="js/audio.js"></script>
+    <!-- Renderers (loaded before entities that depend on them) -->
+    <script src="js/entities/renderers/obstacle-renderers.js"></script>
+    <script src="js/entities/renderers/decoration-renderers.js"></script>
     <!-- Entity classes -->
     <script src="js/entities/player.js"></script>
     <script src="js/entities/coin.js"></script>

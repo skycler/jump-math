@@ -1,10 +1,12 @@
-const CACHE_NAME = 'jump-math-v3';
+const CACHE_NAME = 'jump-math-v4';
 const ASSETS = [
     './',
     './index.html',
     './styles.css',
     './js/config.js',
     './js/audio.js',
+    './js/entities/renderers/obstacle-renderers.js',
+    './js/entities/renderers/decoration-renderers.js',
     './js/entities/player.js',
     './js/entities/coin.js',
     './js/entities/obstacle.js',
