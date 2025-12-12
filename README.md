@@ -8,9 +8,12 @@ A fun 2D jump and run platformer game with math puzzles! Collect coins and avoid
 
 - **Three Themes**: Forest 🌲, Snowy Mountains 🏔️, Beach 🏖️
 - **Theme-Specific Obstacles**:
-  - 🌲 Forest: Fallen logs, angry bees
-  - 🏔️ Snow: Ice blocks, rolling snowballs  
-  - 🏖️ Beach: Sandcastles, scuttling crabs
+  - 🌲 Forest: Fallen logs, angry bees, prowling wolves
+  - 🏔️ Snow: Ice blocks, rolling snowballs, polar bears
+  - 🏖️ Beach: Sandcastles, scuttling crabs, floating jellyfish
+- **Game Modes**:
+  - ⏱️ Timed Challenge: Score as many points as possible before time runs out (1-5 minutes)
+  - 🎯 Target Score: Reach the target score as fast as possible (5-20 points)
 - **Platforms**: Jump on platforms to reach coins higher up
 - **Sound Effects**: Audio feedback for jumps, correct/wrong answers
 - **Controls**: 
@@ -26,12 +29,15 @@ A fun 2D jump and run platformer game with math puzzles! Collect coins and avoid
 ## How to Play
 
 1. Select a theme (Forest, Snow, or Beach)
-2. Configure the multiplication range (default: 1-12)
-3. Click "Start Game"
-4. Use arrow keys or on-screen buttons to move and jump
-5. Collect coins to earn points (solve the math puzzle correctly)
-6. Avoid obstacles - if you hit one, you must solve the puzzle correctly to avoid losing a point
-7. Game ends if your score drops below -5
+2. Choose a game mode:
+   - **Timed Challenge**: Select a time limit (1-5 minutes) and try to score as high as possible
+   - **Target Score**: Select a target (5-20 points) and try to reach it as fast as possible
+3. Configure the multiplication range (default: 1-12)
+4. Click "Start Game"
+5. Use arrow keys or on-screen buttons to move and jump
+6. Collect coins to earn points (solve the math puzzle correctly)
+7. Avoid obstacles - if you hit one, you must solve the puzzle correctly to avoid losing a point
+8. Game ends when time runs out (timed mode), you reach the target (target mode), or your score drops below -5
 
 ## Deployment
 
@@ -140,9 +146,12 @@ ObstacleRenderer (abstract)     DecorationRenderer (abstract)
        ├── BeeRenderer                 ├── TreeRenderer
        ├── WolfRenderer                ├── PineRenderer
        ├── CrabRenderer                ├── PalmRenderer
-       ├── SnowballRenderer            ├── SnowmanRenderer
-       ├── LogRenderer                 ├── BushRenderer
-       └── ...                         └── UmbrellaRenderer
+       ├── JellyfishRenderer           ├── SnowmanRenderer
+       ├── SnowballRenderer            ├── BushRenderer
+       ├── PolarBearRenderer           └── UmbrellaRenderer
+       ├── LogRenderer
+       ├── IceRenderer
+       └── SandcastleRenderer
 
 ObstacleRendererFactory         DecorationRendererFactory
   └── getRenderer(type)           └── getRenderer(type)
