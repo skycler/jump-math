@@ -26,7 +26,7 @@ const THEMES = {
             static: ['#654321', '#8B4513'],
             dynamic: '#FF4444',
             staticType: 'log',
-            dynamicType: 'bee'
+            dynamicTypes: ['bee', 'wolf']
         },
         decorations: ['tree', 'bush']
     },
@@ -42,7 +42,7 @@ const THEMES = {
             static: ['#708090', '#A9A9A9'],
             dynamic: '#4169E1',
             staticType: 'ice',
-            dynamicType: 'snowball'
+            dynamicTypes: ['snowball', 'polarBear']
         },
         decorations: ['pine', 'snowman']
     },
@@ -58,7 +58,7 @@ const THEMES = {
             static: ['#8B4513', '#D2691E'],
             dynamic: '#FF6347',
             staticType: 'sandcastle',
-            dynamicType: 'crab'
+            dynamicTypes: ['crab', 'jellyfish']
         },
         decorations: ['palm', 'umbrella']
     }

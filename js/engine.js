@@ -61,7 +61,7 @@ const GameEngine = {
             y = groundY - height;
         }
         
-        game.obstacles.push(new Obstacle(game.canvas.width + 50, y, width, height, isDynamic));
+        game.obstacles.push(new Obstacle(game.canvas.width + 50, y, width, height, isDynamic, game.theme));
     },
 
     spawnDecoration(game) {

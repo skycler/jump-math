@@ -4,7 +4,7 @@
 // ============================================
 
 class Obstacle {
-    constructor(x, y, width, height, isDynamic = false) {
+    constructor(x, y, width, height, isDynamic = false, themeName = 'forest') {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -14,6 +14,17 @@ class Obstacle {
         this.moveDir = 1;
         this.startY = y;
         this.moveRange = 50;
+        
+        // Pick obstacle type at creation time (for dynamic obstacles with multiple types)
+        const theme = THEMES[themeName];
+        if (isDynamic && theme.obstacles.dynamicTypes) {
+            const types = theme.obstacles.dynamicTypes;
+            this.obstacleType = types[Math.floor(Math.random() * types.length)];
+        } else if (isDynamic) {
+            this.obstacleType = theme.obstacles.dynamicType || 'default';
+        } else {
+            this.obstacleType = theme.obstacles.staticType || 'default';
+        }
     }
 
     update() {
@@ -32,14 +43,11 @@ class Obstacle {
         if (this.hit) return;
         
         const theme = THEMES[game.theme];
-        const obstacleType = this.isDynamic 
-            ? theme.obstacles.dynamicType 
-            : theme.obstacles.staticType;
         
-        // Get renderer from factory (cached internally)
+        // Get renderer from factory using pre-selected type
         const renderer = this.isDynamic
-            ? ObstacleRendererFactory.getDynamicRenderer(obstacleType, theme)
-            : ObstacleRendererFactory.getStaticRenderer(obstacleType, theme);
+            ? ObstacleRendererFactory.getDynamicRenderer(this.obstacleType, theme)
+            : ObstacleRendererFactory.getStaticRenderer(this.obstacleType, theme);
         
         if (renderer) {
             renderer.draw(ctx, this.x, this.y, this.width, this.height, game.frameCount);
