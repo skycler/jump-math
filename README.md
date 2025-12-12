@@ -102,13 +102,18 @@ The `icons/icon.svg` file is included as the source. To generate PNG icons for t
 ```
 jump-math/
 ├── index.html          # Main HTML file
-├── styles.css          # Styling
+├── styles.css          # Styling with glassmorphism UI
 ├── manifest.json       # PWA manifest
 ├── sw.js               # Service worker for offline support
 ├── js/
 │   ├── config.js       # Game settings & theme definitions
 │   ├── audio.js        # Web Audio API sound system
-│   ├── entities.js     # Player, Coin, Obstacle, Platform classes
+│   ├── entities/       # Game entity classes
+│   │   ├── player.js   # Player movement, jumping, collision
+│   │   ├── coin.js     # Collectible coins with bobbing animation
+│   │   ├── obstacle.js # Theme-specific static & dynamic obstacles
+│   │   ├── platform.js # Jumpable platforms with theme decorations
+│   │   └── decoration.js # Background decorations (trees, palms, etc.)
 │   ├── engine.js       # Game loop, spawning, collision, rendering
 │   ├── ui.js           # Puzzle modal, menus, HUD
 │   └── main.js         # Entry point & initialization
