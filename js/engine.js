@@ -66,9 +66,8 @@ const GameEngine = {
 
     spawnDecoration(game) {
         const theme = THEMES[game.theme];
-        const emoji = theme.decorations[Math.floor(Math.random() * theme.decorations.length)];
-        const y = game.canvas.height - CONFIG.groundHeight - 30;
-        game.decorations.push(new Decoration(game.canvas.width + 50, y, emoji));
+        const type = theme.decorations[Math.floor(Math.random() * theme.decorations.length)];
+        game.decorations.push(new Decoration(game.canvas.width + 50, type, game.theme));
     },
 
     // Draw Background
@@ -156,7 +155,7 @@ const GameEngine = {
         this.drawBackground(game);
         
         // Draw decorations (behind everything)
-        game.decorations.forEach(dec => dec.draw(game.ctx));
+        game.decorations.forEach(dec => dec.draw(game.ctx, game.canvas));
         
         // Draw platforms
         game.platforms.forEach(platform => platform.draw(game.ctx, game));

@@ -28,7 +28,7 @@ const THEMES = {
             staticType: 'log',
             dynamicType: 'bee'
         },
-        decorations: ['🌲', '🌳', '🍄', '🌿']
+        decorations: ['tree', 'bush']
     },
     snow: {
         name: 'Snowy Mountains',
@@ -44,7 +44,7 @@ const THEMES = {
             staticType: 'ice',
             dynamicType: 'snowball'
         },
-        decorations: ['🏔️', '❄️', '⛄', '🎿']
+        decorations: ['pine', 'snowman']
     },
     beach: {
         name: 'Beach',
@@ -60,6 +60,6 @@ const THEMES = {
             staticType: 'sandcastle',
             dynamicType: 'crab'
         },
-        decorations: ['🏝️', '🌴', '🐚', '🦀']
+        decorations: ['palm', 'umbrella']
     }
 };
