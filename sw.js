@@ -1,9 +1,14 @@
-const CACHE_NAME = 'jump-math-v1';
+const CACHE_NAME = 'jump-math-v2';
 const ASSETS = [
     './',
     './index.html',
     './styles.css',
-    './game.js',
+    './js/config.js',
+    './js/audio.js',
+    './js/entities.js',
+    './js/engine.js',
+    './js/ui.js',
+    './js/main.js',
     './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png'
