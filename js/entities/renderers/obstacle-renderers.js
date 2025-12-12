@@ -411,6 +411,164 @@ class DefaultDynamicRenderer extends ObstacleRenderer {
 }
 
 // ============================================
+// CITY OBSTACLE RENDERERS
+// ============================================
+
+class TrashCanRenderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height) {
+        // Body
+        ctx.fillStyle = '#4a5568';
+        ctx.beginPath();
+        ctx.moveTo(x + 5, y + height);
+        ctx.lineTo(x, y + height * 0.3);
+        ctx.lineTo(x + width, y + height * 0.3);
+        ctx.lineTo(x + width - 5, y + height);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Lid
+        ctx.fillStyle = '#2d3748';
+        ctx.fillRect(x - 3, y + height * 0.2, width + 6, height * 0.15);
+        
+        // Handle
+        ctx.beginPath();
+        ctx.arc(x + width/2, y + height * 0.1, 8, Math.PI, 0);
+        ctx.strokeStyle = '#2d3748';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        // Recycling symbol
+        ctx.fillStyle = '#48bb78';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('♻', x + width/2, y + height * 0.65);
+    }
+}
+
+class TaxiRenderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height, frameCount) {
+        const bounce = Math.sin(frameCount * 0.15) * 2;
+        
+        // Body
+        ctx.fillStyle = '#f6e05e';
+        ctx.beginPath();
+        ctx.roundRect(x, y + height * 0.3 + bounce, width, height * 0.5, 5);
+        ctx.fill();
+        
+        // Roof
+        ctx.fillStyle = '#ecc94b';
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.2, y + height * 0.3 + bounce);
+        ctx.lineTo(x + width * 0.3, y + bounce);
+        ctx.lineTo(x + width * 0.7, y + bounce);
+        ctx.lineTo(x + width * 0.8, y + height * 0.3 + bounce);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Windows
+        ctx.fillStyle = '#63b3ed';
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.25, y + height * 0.32 + bounce);
+        ctx.lineTo(x + width * 0.32, y + height * 0.05 + bounce);
+        ctx.lineTo(x + width * 0.48, y + height * 0.05 + bounce);
+        ctx.lineTo(x + width * 0.48, y + height * 0.32 + bounce);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.52, y + height * 0.32 + bounce);
+        ctx.lineTo(x + width * 0.52, y + height * 0.05 + bounce);
+        ctx.lineTo(x + width * 0.68, y + height * 0.05 + bounce);
+        ctx.lineTo(x + width * 0.75, y + height * 0.32 + bounce);
+        ctx.fill();
+        
+        // Wheels
+        ctx.fillStyle = '#1a202c';
+        ctx.beginPath();
+        ctx.arc(x + width * 0.25, y + height * 0.85 + bounce, 8, 0, Math.PI * 2);
+        ctx.arc(x + width * 0.75, y + height * 0.85 + bounce, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Taxi sign
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x + width * 0.4, y - 8 + bounce, width * 0.2, 10);
+        ctx.fillStyle = '#1a202c';
+        ctx.font = 'bold 8px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('TAXI', x + width/2, y - 1 + bounce);
+    }
+}
+
+class PigeonRenderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height, frameCount) {
+        const centerX = x + width/2;
+        const centerY = y + height/2;
+        const bob = Math.sin(frameCount * 0.3) * 3;
+        const wingFlap = Math.sin(frameCount * 0.4) * 10;
+        
+        // Body
+        ctx.fillStyle = '#718096';
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY + bob, width/2, height/2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Head
+        ctx.fillStyle = '#4a5568';
+        ctx.beginPath();
+        ctx.arc(x + width * 0.15, centerY - height * 0.2 + bob, 10, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Neck shimmer (iridescent)
+        ctx.fillStyle = '#48bb78';
+        ctx.beginPath();
+        ctx.arc(x + width * 0.25, centerY - height * 0.05 + bob, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#805ad5';
+        ctx.beginPath();
+        ctx.arc(x + width * 0.22, centerY + bob, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Beak
+        ctx.fillStyle = '#f6ad55';
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.05, centerY - height * 0.2 + bob);
+        ctx.lineTo(x - 5, centerY - height * 0.15 + bob);
+        ctx.lineTo(x + width * 0.1, centerY - height * 0.12 + bob);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Eye
+        ctx.fillStyle = '#f56565';
+        ctx.beginPath();
+        ctx.arc(x + width * 0.12, centerY - height * 0.25 + bob, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Wings
+        ctx.fillStyle = '#a0aec0';
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY - height * 0.1 + bob - wingFlap, width * 0.35, 6, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Tail
+        ctx.fillStyle = '#4a5568';
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.9, centerY + bob);
+        ctx.lineTo(x + width + 10, centerY - 5 + bob);
+        ctx.lineTo(x + width + 10, centerY + 5 + bob);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Feet
+        ctx.strokeStyle = '#f56565';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX - 5, centerY + height * 0.3 + bob);
+        ctx.lineTo(centerX - 5, y + height);
+        ctx.moveTo(centerX + 5, centerY + height * 0.3 + bob);
+        ctx.lineTo(centerX + 5, y + height);
+        ctx.stroke();
+    }
+}
+
+// ============================================
 // OBSTACLE RENDERER FACTORY
 // ============================================
 
@@ -464,6 +622,17 @@ const ObstacleRendererFactory = {
                 renderer = new JellyfishRenderer();
                 break;
             
+            // City obstacles
+            case 'trashcan':
+                renderer = new TrashCanRenderer();
+                break;
+            case 'taxi':
+                renderer = new TaxiRenderer();
+                break;
+            case 'pigeon':
+                renderer = new PigeonRenderer();
+                break;
+            
             // Fallbacks with theme colors
             default:
                 if (theme) {
@@ -481,7 +650,7 @@ const ObstacleRendererFactory = {
      * Get a static obstacle renderer
      */
     getStaticRenderer(type, theme) {
-        if (type === 'log' || type === 'ice' || type === 'sandcastle') {
+        if (type === 'log' || type === 'ice' || type === 'sandcastle' || type === 'trashcan') {
             return this.getRenderer(type, theme);
         }
         // Default static with theme colors

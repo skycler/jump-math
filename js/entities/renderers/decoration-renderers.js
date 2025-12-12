@@ -182,6 +182,91 @@ class UmbrellaRenderer extends DecorationRenderer {
 }
 
 // ============================================
+// CITY DECORATIONS
+// ============================================
+
+class BuildingRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY, animOffset = 0) {
+        // Use animOffset as a seed for consistent building variation
+        const seed = Math.floor(animOffset * 10);
+        const buildingHeight = 100 + (seed % 5) * 10; // 100, 110, 120, 130, or 140
+        const buildingWidth = 50;
+        
+        // Building body
+        ctx.fillStyle = '#2d3748';
+        ctx.fillRect(x - buildingWidth/2, groundY - buildingHeight, buildingWidth, buildingHeight);
+        
+        // Building edge highlight
+        ctx.fillStyle = '#4a5568';
+        ctx.fillRect(x - buildingWidth/2, groundY - buildingHeight, 5, buildingHeight);
+        
+        // Windows (grid pattern)
+        const windowSize = 8;
+        const windowGap = 6;
+        const windowsPerRow = 3;
+        const rowCount = Math.floor((buildingHeight - 20) / (windowSize + windowGap));
+        
+        for (let row = 0; row < rowCount; row++) {
+            for (let col = 0; col < windowsPerRow; col++) {
+                // Use seed + row/col for stable window pattern
+                const isLit = ((seed + row + col * 2) % 3) !== 0;
+                ctx.fillStyle = isLit ? '#f6e05e' : '#1a202c';
+                
+                const wx = x - buildingWidth/2 + 8 + col * (windowSize + windowGap);
+                const wy = groundY - buildingHeight + 10 + row * (windowSize + windowGap);
+                ctx.fillRect(wx, wy, windowSize, windowSize);
+            }
+        }
+        
+        // Roof details
+        ctx.fillStyle = '#1a202c';
+        ctx.fillRect(x - buildingWidth/2 - 2, groundY - buildingHeight - 5, buildingWidth + 4, 8);
+    }
+}
+
+class StreetlampRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY) {
+        // Pole
+        ctx.fillStyle = '#1a202c';
+        ctx.fillRect(x - 3, groundY - 90, 6, 90);
+        
+        // Curved arm
+        ctx.strokeStyle = '#1a202c';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x, groundY - 85);
+        ctx.quadraticCurveTo(x + 20, groundY - 90, x + 25, groundY - 75);
+        ctx.stroke();
+        
+        // Lamp housing
+        ctx.fillStyle = '#2d3748';
+        ctx.beginPath();
+        ctx.moveTo(x + 15, groundY - 75);
+        ctx.lineTo(x + 35, groundY - 75);
+        ctx.lineTo(x + 30, groundY - 60);
+        ctx.lineTo(x + 20, groundY - 60);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Light glow
+        ctx.fillStyle = 'rgba(246, 224, 94, 0.3)';
+        ctx.beginPath();
+        ctx.arc(x + 25, groundY - 55, 25, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Light bulb
+        ctx.fillStyle = '#f6e05e';
+        ctx.beginPath();
+        ctx.arc(x + 25, groundY - 62, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Base
+        ctx.fillStyle = '#1a202c';
+        ctx.fillRect(x - 8, groundY - 5, 16, 5);
+    }
+}
+
+// ============================================
 // DECORATION RENDERER FACTORY
 // ============================================
 
@@ -227,6 +312,14 @@ const DecorationRendererFactory = {
                 renderer = new UmbrellaRenderer();
                 break;
             
+            // City
+            case 'building':
+                renderer = new BuildingRenderer();
+                break;
+            case 'streetlamp':
+                renderer = new StreetlampRenderer();
+                break;
+            
             default:
                 console.warn(`Unknown decoration type: ${type}`);
                 return null;
@@ -240,7 +333,7 @@ const DecorationRendererFactory = {
      * Get all available decoration types
      */
     getAvailableTypes() {
-        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella'];
+        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella', 'building', 'streetlamp'];
     },
     
     /**
@@ -250,7 +343,8 @@ const DecorationRendererFactory = {
         const themeDecorations = {
             forest: ['tree', 'bush'],
             snow: ['pine', 'snowman'],
-            beach: ['palm', 'umbrella']
+            beach: ['palm', 'umbrella'],
+            city: ['building', 'streetlamp']
         };
         return themeDecorations[theme] || [];
     }

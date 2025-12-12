@@ -61,5 +61,21 @@ const THEMES = {
             dynamicTypes: ['crab', 'jellyfish']
         },
         decorations: ['palm', 'umbrella']
+    },
+    city: {
+        name: 'City',
+        sky: ['#4a5568', '#1a202c'],
+        ground: '#2d3748',
+        groundTop: '#718096',
+        player: '#FF6B35',
+        coin: '#FFD700',
+        platform: { top: '#4a5568', bottom: '#2d3748' },
+        obstacles: {
+            static: ['#718096', '#4a5568'],
+            dynamic: '#f6e05e',
+            staticType: 'trashcan',
+            dynamicTypes: ['taxi', 'pigeon']
+        },
+        decorations: ['building', 'streetlamp']
     }
 };

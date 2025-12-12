@@ -6,11 +6,12 @@ A fun 2D jump and run platformer game with math puzzles! Collect coins and avoid
 
 ## Features
 
-- **Three Themes**: Forest 🌲, Snowy Mountains 🏔️, Beach 🏖️
+- **Four Themes**: Forest 🌲, Snowy Mountains 🏔️, Beach 🏖️, City 🏙️
 - **Theme-Specific Obstacles**:
   - 🌲 Forest: Fallen logs, angry bees, prowling wolves
   - 🏔️ Snow: Ice blocks, rolling snowballs, polar bears
   - 🏖️ Beach: Sandcastles, scuttling crabs, floating jellyfish
+  - 🏙️ City: Trash cans, speeding taxis, fluttering pigeons
 - **Game Modes**:
   - ⏱️ Timed Challenge: Score as many points as possible before time runs out (1-5 minutes)
   - 🎯 Target Score: Reach the target score as fast as possible (5-20 points)
@@ -33,7 +34,7 @@ A fun 2D jump and run platformer game with math puzzles! Collect coins and avoid
 
 ## How to Play
 
-1. Select a theme (Forest, Snow, or Beach)
+1. Select a theme (Forest, Snow, Beach, or City)
 2. Choose a game mode:
    - **Timed Challenge**: Select a time limit (1-5 minutes) and try to score as high as possible
    - **Target Score**: Select a target (5-20 points) and try to reach it as fast as possible
