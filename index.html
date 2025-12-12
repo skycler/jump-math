@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Jump Math - A fun 2D platformer game with math puzzles">
+    <meta name="theme-color" content="#2d5a27">
+    <title>Jump Math</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="menu-screen" class="screen active">
+            <h1>🎮 Jump Math</h1>
+            <div class="menu-section">
+                <h2>Select Theme</h2>
+                <div class="theme-buttons">
+                    <button class="theme-btn" data-theme="forest">🌲 Forest</button>
+                    <button class="theme-btn" data-theme="snow">🏔️ Snowy Mountains</button>
+                    <button class="theme-btn" data-theme="beach">🏖️ Beach</button>
+                </div>
+            </div>
+            <div class="menu-section">
+                <h2>Math Settings</h2>
+                <div class="math-config">
+                    <label>Multiplication Range:</label>
+                    <div class="range-inputs">
+                        <input type="number" id="min-mult" min="1" max="12" value="1"> to
+                        <input type="number" id="max-mult" min="1" max="12" value="12">
+                    </div>
+                </div>
+            </div>
+            <button id="start-btn" class="primary-btn">Start Game</button>
+            <div class="controls-info">
+                <h3>Controls</h3>
+                <p>⬆️ / Space - Jump</p>
+                <p>⬅️ ➡️ - Move</p>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div id="hud">
+                <div id="score">Score: 0</div>
+                <div id="theme-display"></div>
+                <button id="pause-btn">⏸️</button>
+            </div>
+            <canvas id="game-canvas"></canvas>
+            <div id="mobile-controls">
+                <button id="btn-left" class="control-btn">⬅️</button>
+                <button id="btn-jump" class="control-btn">⬆️</button>
+                <button id="btn-right" class="control-btn">➡️</button>
+            </div>
+        </div>
+
+        <div id="puzzle-modal" class="modal">
+            <div class="modal-content">
+                <h2 id="puzzle-title">Math Puzzle!</h2>
+                <p id="puzzle-question"></p>
+                <input type="number" id="puzzle-answer" placeholder="Your answer">
+                <button id="submit-answer">Submit</button>
+                <p id="puzzle-feedback"></p>
+            </div>
+        </div>
+
+        <div id="pause-modal" class="modal">
+            <div class="modal-content">
+                <h2>Game Paused</h2>
+                <button id="resume-btn" class="primary-btn">Resume</button>
+                <button id="quit-btn" class="secondary-btn">Quit to Menu</button>
+            </div>
+        </div>
+
+        <div id="gameover-modal" class="modal">
+            <div class="modal-content">
+                <h2>Game Over!</h2>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <button id="retry-btn" class="primary-btn">Play Again</button>
+                <button id="menu-btn" class="secondary-btn">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed:', err));
+        }
+    </script>
+</body>
+</html>
