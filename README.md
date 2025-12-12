@@ -22,6 +22,11 @@ A fun 2D jump and run platformer game with math puzzles! Collect coins and avoid
 - **Scoring System**:
   - Collect coins → Solve math puzzle → Correct answer = +1 point
   - Touch obstacle → Solve math puzzle → Wrong answer = -1 point
+- **Visual Feedback**:
+  - Icon-based puzzle modal (🪙 coin, 🛡️ shield) - no text needed
+  - Color-coded challenges: green border for coins, red for obstacles
+  - Screen-wide effects: glow animation for correct, shake for wrong
+  - Theme-specific effect colors
 - **Configurable Math**: Set multiplication range (1-12)
 - **PWA Support**: Installable as an app, works offline
 - **Mobile Friendly**: Touch controls for mobile devices
