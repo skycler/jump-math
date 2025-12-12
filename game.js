@@ -22,9 +22,12 @@ const THEMES = {
         groundTop: '#228B22',
         player: '#FF6B35',
         coin: '#FFD700',
+        platform: { top: '#228B22', bottom: '#3d2817' },
         obstacles: {
             static: ['#654321', '#8B4513'],
-            dynamic: '#FF4444'
+            dynamic: '#FF4444',
+            staticType: 'log',      // Fallen logs
+            dynamicType: 'bee'      // Angry bees
         },
         decorations: ['🌲', '🌳', '🍄', '🌿']
     },
@@ -35,9 +38,12 @@ const THEMES = {
         groundTop: '#FFFAFA',
         player: '#FF6B35',
         coin: '#FFD700',
+        platform: { top: '#FFFAFA', bottom: '#a8d5ff' },
         obstacles: {
             static: ['#708090', '#A9A9A9'],
-            dynamic: '#4169E1'
+            dynamic: '#4169E1',
+            staticType: 'ice',      // Ice blocks
+            dynamicType: 'snowball' // Rolling snowballs
         },
         decorations: ['🏔️', '❄️', '⛄', '🎿']
     },
@@ -48,9 +54,12 @@ const THEMES = {
         groundTop: '#F4D03F',
         player: '#FF6B35',
         coin: '#FFD700',
+        platform: { top: '#c2a66b', bottom: '#8B7355' },
         obstacles: {
             static: ['#8B4513', '#D2691E'],
-            dynamic: '#FF6347'
+            dynamic: '#FF6347',
+            staticType: 'sandcastle', // Sand castles
+            dynamicType: 'crab'       // Scuttling crabs
         },
         decorations: ['🏝️', '🌴', '🐚', '🦀']
     }
@@ -70,11 +79,89 @@ let game = {
     player: null,
     coins: [],
     obstacles: [],
+    platforms: [],
     decorations: [],
     keys: {},
     pendingPuzzle: null,
-    puzzleType: null // 'coin' or 'obstacle'
+    puzzleType: null, // 'coin' or 'obstacle'
+    audioCtx: null,
+    soundEnabled: true
 };
+
+// Sound System using Web Audio API
+function initAudio() {
+    try {
+        game.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+        console.log('Web Audio API not supported');
+        game.soundEnabled = false;
+    }
+}
+
+function playSound(type) {
+    if (!game.soundEnabled || !game.audioCtx) return;
+    
+    // Resume audio context if suspended (browser autoplay policy)
+    if (game.audioCtx.state === 'suspended') {
+        game.audioCtx.resume();
+    }
+    
+    const ctx = game.audioCtx;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    const now = ctx.currentTime;
+    
+    switch(type) {
+        case 'jump':
+            // Quick upward sweep
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(200, now);
+            oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            oscillator.start(now);
+            oscillator.stop(now + 0.15);
+            break;
+            
+        case 'pointEarned':
+            // Happy ascending arpeggio
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(523, now); // C5
+            oscillator.frequency.setValueAtTime(659, now + 0.1); // E5
+            oscillator.frequency.setValueAtTime(784, now + 0.2); // G5
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            oscillator.start(now);
+            oscillator.stop(now + 0.4);
+            break;
+            
+        case 'pointLost':
+            // Sad descending sound
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(400, now);
+            oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+            oscillator.start(now);
+            oscillator.stop(now + 0.35);
+            break;
+            
+        case 'coin':
+            // Coin pickup sparkle
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, now);
+            oscillator.frequency.setValueAtTime(1108, now + 0.05);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            oscillator.start(now);
+            oscillator.stop(now + 0.15);
+            break;
+    }
+}
 
 // Player Class
 class Player {
@@ -117,6 +204,21 @@ class Player {
         } else {
             this.onGround = false;
         }
+        
+        // Platform collision (only when falling)
+        if (this.velY > 0) {
+            for (const platform of game.platforms) {
+                if (this.x + this.width > platform.x && 
+                    this.x < platform.x + platform.width &&
+                    this.y + this.height >= platform.y &&
+                    this.y + this.height <= platform.y + platform.height + this.velY) {
+                    this.y = platform.y - this.height;
+                    this.velY = 0;
+                    this.onGround = true;
+                    break;
+                }
+            }
+        }
 
         // Screen bounds
         if (this.x < 0) this.x = 0;
@@ -129,6 +231,7 @@ class Player {
         if (this.onGround) {
             this.velY = CONFIG.jumpForce;
             this.onGround = false;
+            playSound('jump');
         }
     }
 
@@ -259,50 +362,217 @@ class Obstacle {
         if (this.hit) return;
         
         const theme = THEMES[game.theme];
-        const colors = this.isDynamic ? 
-            [theme.obstacles.dynamic] : 
-            theme.obstacles.static;
+        const obstacleType = this.isDynamic ? theme.obstacles.dynamicType : theme.obstacles.staticType;
         
         if (this.isDynamic) {
-            // Dynamic obstacle - spiky ball
-            ctx.fillStyle = colors[0];
-            ctx.beginPath();
-            ctx.arc(this.x + this.width/2, this.y + this.height/2, 
-                    this.width/2, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Spikes
-            const centerX = this.x + this.width/2;
-            const centerY = this.y + this.height/2;
-            const spikeCount = 8;
-            ctx.fillStyle = '#FF0000';
-            for (let i = 0; i < spikeCount; i++) {
-                const angle = (i / spikeCount) * Math.PI * 2 + game.frameCount * 0.05;
-                const innerX = centerX + Math.cos(angle) * (this.width/2);
-                const innerY = centerY + Math.sin(angle) * (this.height/2);
-                const outerX = centerX + Math.cos(angle) * (this.width/2 + 10);
-                const outerY = centerY + Math.sin(angle) * (this.height/2 + 10);
-                
-                ctx.beginPath();
-                ctx.moveTo(innerX, innerY);
-                ctx.lineTo(outerX, outerY);
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = '#FF0000';
-                ctx.stroke();
-            }
+            this.drawDynamicObstacle(ctx, obstacleType, theme);
         } else {
-            // Static obstacle - rock/box
-            ctx.fillStyle = colors[0];
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            
-            // Top highlight
-            ctx.fillStyle = colors[1];
-            ctx.fillRect(this.x, this.y, this.width, 10);
-            
-            // Details
-            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(this.x, this.y, this.width, this.height);
+            this.drawStaticObstacle(ctx, obstacleType, theme);
+        }
+    }
+    
+    drawStaticObstacle(ctx, type, theme) {
+        const colors = theme.obstacles.static;
+        
+        switch(type) {
+            case 'log':
+                // Forest - Fallen log
+                ctx.fillStyle = '#654321';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width/2, this.y + this.height/2, 
+                           this.width/2, this.height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#3d2817';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                // Wood rings
+                ctx.beginPath();
+                ctx.arc(this.x + this.width * 0.3, this.y + this.height/2, 5, 0, Math.PI * 2);
+                ctx.arc(this.x + this.width * 0.7, this.y + this.height/2, 4, 0, Math.PI * 2);
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                break;
+                
+            case 'ice':
+                // Snow - Ice block
+                ctx.fillStyle = 'rgba(135, 206, 250, 0.8)';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                // Shine
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath();
+                ctx.moveTo(this.x + 5, this.y + 5);
+                ctx.lineTo(this.x + 15, this.y + 5);
+                ctx.lineTo(this.x + 5, this.y + 20);
+                ctx.closePath();
+                ctx.fill();
+                // Border
+                ctx.strokeStyle = 'rgba(100, 149, 237, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+                break;
+                
+            case 'sandcastle':
+                // Beach - Sand castle
+                ctx.fillStyle = '#DEB887';
+                // Base
+                ctx.fillRect(this.x, this.y + this.height * 0.4, this.width, this.height * 0.6);
+                // Towers
+                ctx.fillRect(this.x, this.y, this.width * 0.3, this.height * 0.5);
+                ctx.fillRect(this.x + this.width * 0.7, this.y, this.width * 0.3, this.height * 0.5);
+                // Tower tops
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + this.width * 0.15, this.y - 10);
+                ctx.lineTo(this.x + this.width * 0.3, this.y);
+                ctx.fill();
+                ctx.moveTo(this.x + this.width * 0.7, this.y);
+                ctx.lineTo(this.x + this.width * 0.85, this.y - 10);
+                ctx.lineTo(this.x + this.width, this.y);
+                ctx.fill();
+                // Door
+                ctx.fillStyle = '#8B7355';
+                ctx.fillRect(this.x + this.width * 0.4, this.y + this.height * 0.6, 
+                            this.width * 0.2, this.height * 0.4);
+                break;
+                
+            default:
+                // Default rock/box
+                ctx.fillStyle = colors[0];
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.fillStyle = colors[1];
+                ctx.fillRect(this.x, this.y, this.width, 10);
+        }
+    }
+    
+    drawDynamicObstacle(ctx, type, theme) {
+        const centerX = this.x + this.width/2;
+        const centerY = this.y + this.height/2;
+        
+        switch(type) {
+            case 'bee':
+                // Forest - Angry bee
+                // Body
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY, this.width/2, this.height/2.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Stripes
+                ctx.fillStyle = '#000';
+                ctx.fillRect(centerX - 5, centerY - this.height/3, 4, this.height/1.5);
+                ctx.fillRect(centerX + 3, centerY - this.height/3, 4, this.height/1.5);
+                // Wings
+                ctx.fillStyle = 'rgba(200, 230, 255, 0.7)';
+                const wingFlap = Math.sin(game.frameCount * 0.5) * 5;
+                ctx.beginPath();
+                ctx.ellipse(centerX - 5, centerY - this.height/2 + wingFlap, 10, 6, -0.3, 0, Math.PI * 2);
+                ctx.ellipse(centerX + 5, centerY - this.height/2 - wingFlap, 10, 6, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                // Stinger
+                ctx.fillStyle = '#333';
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width, centerY - 3);
+                ctx.lineTo(this.x + this.width + 8, centerY);
+                ctx.lineTo(this.x + this.width, centerY + 3);
+                ctx.closePath();
+                ctx.fill();
+                // Angry eyes
+                ctx.fillStyle = '#FF0000';
+                ctx.beginPath();
+                ctx.arc(centerX - 6, centerY - 3, 3, 0, Math.PI * 2);
+                ctx.arc(centerX + 6, centerY - 3, 3, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+                
+            case 'snowball':
+                // Snow - Rolling snowball
+                const rollAngle = game.frameCount * 0.1;
+                ctx.fillStyle = '#FFFAFA';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, this.width/2, 0, Math.PI * 2);
+                ctx.fill();
+                // Shadow/depth
+                ctx.fillStyle = 'rgba(150, 180, 200, 0.3)';
+                ctx.beginPath();
+                ctx.arc(centerX + 3, centerY + 3, this.width/2 - 2, 0, Math.PI * 2);
+                ctx.fill();
+                // Snow texture spots
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.5)';
+                for (let i = 0; i < 4; i++) {
+                    const angle = rollAngle + (i * Math.PI / 2);
+                    const spotX = centerX + Math.cos(angle) * (this.width/4);
+                    const spotY = centerY + Math.sin(angle) * (this.height/4);
+                    ctx.beginPath();
+                    ctx.arc(spotX, spotY, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                break;
+                
+            case 'crab':
+                // Beach - Scuttling crab
+                const scuttle = Math.sin(game.frameCount * 0.3) * 2;
+                // Body
+                ctx.fillStyle = '#FF6347';
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY + scuttle, this.width/2, this.height/2.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Claws
+                ctx.beginPath();
+                ctx.arc(this.x - 5, centerY - 5 + scuttle, 8, 0, Math.PI * 2);
+                ctx.arc(this.x + this.width + 5, centerY - 5 + scuttle, 8, 0, Math.PI * 2);
+                ctx.fill();
+                // Claw pincers
+                ctx.strokeStyle = '#FF6347';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(this.x - 8, centerY - 8 + scuttle, 5, 0.5, 2.5);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(this.x + this.width + 8, centerY - 8 + scuttle, 5, 0.6, 2.6);
+                ctx.stroke();
+                // Eyes on stalks
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(centerX - 8, centerY - this.height/2 + scuttle, 4, 0, Math.PI * 2);
+                ctx.arc(centerX + 8, centerY - this.height/2 + scuttle, 4, 0, Math.PI * 2);
+                ctx.fill();
+                // Legs
+                ctx.strokeStyle = '#E55347';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    const legY = centerY + 5 + i * 5 + scuttle;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 5, legY);
+                    ctx.lineTo(this.x - 10, legY + 8);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + this.width - 5, legY);
+                    ctx.lineTo(this.x + this.width + 10, legY + 8);
+                    ctx.stroke();
+                }
+                break;
+                
+            default:
+                // Default spiky ball
+                ctx.fillStyle = theme.obstacles.dynamic;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, this.width/2, 0, Math.PI * 2);
+                ctx.fill();
+                // Spikes
+                const spikeCount = 8;
+                for (let i = 0; i < spikeCount; i++) {
+                    const angle = (i / spikeCount) * Math.PI * 2 + game.frameCount * 0.05;
+                    const innerX = centerX + Math.cos(angle) * (this.width/2);
+                    const innerY = centerY + Math.sin(angle) * (this.height/2);
+                    const outerX = centerX + Math.cos(angle) * (this.width/2 + 10);
+                    const outerY = centerY + Math.sin(angle) * (this.height/2 + 10);
+                    ctx.beginPath();
+                    ctx.moveTo(innerX, innerY);
+                    ctx.lineTo(outerX, outerY);
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = '#FF0000';
+                    ctx.stroke();
+                }
         }
     }
 
@@ -313,6 +583,59 @@ class Obstacle {
             width: this.width,
             height: this.height
         };
+    }
+
+    isOffScreen() {
+        return this.x + this.width < 0;
+    }
+}
+
+// Platform Class
+class Platform {
+    constructor(x, y, width) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = 20;
+    }
+
+    update() {
+        this.x -= CONFIG.scrollSpeed;
+    }
+
+    draw(ctx) {
+        const theme = THEMES[game.theme];
+        
+        // Platform top
+        ctx.fillStyle = theme.platform.top;
+        ctx.fillRect(this.x, this.y, this.width, 8);
+        
+        // Platform bottom/shadow
+        ctx.fillStyle = theme.platform.bottom;
+        ctx.fillRect(this.x, this.y + 8, this.width, this.height - 8);
+        
+        // Edge highlights
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + this.width, this.y);
+        ctx.stroke();
+        
+        // Grass/snow/sand tufts on top based on theme
+        if (game.theme === 'forest') {
+            ctx.fillStyle = '#2d8a2d';
+            for (let i = 0; i < this.width; i += 15) {
+                ctx.beginPath();
+                ctx.moveTo(this.x + i + 5, this.y);
+                ctx.lineTo(this.x + i + 8, this.y - 6);
+                ctx.lineTo(this.x + i + 11, this.y);
+                ctx.fill();
+            }
+        } else if (game.theme === 'snow') {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(this.x, this.y - 3, this.width, 5);
+        }
     }
 
     isOffScreen() {
@@ -401,19 +724,23 @@ function checkPuzzleAnswer() {
             game.score += 1;
             feedback.textContent = '✅ Correct! +1 point';
             feedback.className = 'correct';
+            playSound('pointEarned');
         } else {
             feedback.textContent = `❌ Wrong! The answer was ${game.pendingPuzzle.answer}`;
             feedback.className = 'wrong';
+            playSound('pointLost');
         }
     } else {
         // Obstacle
         if (isCorrect) {
             feedback.textContent = '✅ Correct! No penalty';
             feedback.className = 'correct';
+            playSound('pointEarned');
         } else {
             game.score -= 1;
             feedback.textContent = `❌ Wrong! -1 point. Answer was ${game.pendingPuzzle.answer}`;
             feedback.className = 'wrong';
+            playSound('pointLost');
         }
     }
     
@@ -440,11 +767,37 @@ function updateScoreDisplay() {
 // Spawn Functions
 function spawnCoin() {
     const groundY = game.canvas.height - CONFIG.groundHeight;
-    // Coin y is the CENTER of the coin (radius=15)
-    // Spawn coins at a nice height - requires a small jump
-    const y = groundY - 70 - Math.random() * 50; // Between 70-120px above ground
     
+    // 40% chance to spawn coin on a platform (higher up)
+    if (Math.random() < 0.4 && game.platforms.length > 0) {
+        // Find a platform that's still visible
+        const visiblePlatforms = game.platforms.filter(p => p.x > game.canvas.width * 0.3);
+        if (visiblePlatforms.length > 0) {
+            const platform = visiblePlatforms[Math.floor(Math.random() * visiblePlatforms.length)];
+            const y = platform.y - 30; // Above the platform
+            game.coins.push(new Coin(platform.x + platform.width / 2, y));
+            return;
+        }
+    }
+    
+    // Regular coin spawn
+    const y = groundY - 70 - Math.random() * 50;
     game.coins.push(new Coin(game.canvas.width + 50, y));
+}
+
+function spawnPlatform() {
+    const groundY = game.canvas.height - CONFIG.groundHeight;
+    const width = 80 + Math.random() * 60;
+    // Platforms at various heights - reachable by jumping
+    const heights = [120, 160, 200];
+    const y = groundY - heights[Math.floor(Math.random() * heights.length)];
+    
+    game.platforms.push(new Platform(game.canvas.width + 50, y, width));
+    
+    // Often spawn a coin above the platform
+    if (Math.random() < 0.7) {
+        game.coins.push(new Coin(game.canvas.width + 50 + width / 2, y - 30));
+    }
 }
 
 function spawnObstacle() {
@@ -520,9 +873,16 @@ function update() {
     if (game.frameCount % CONFIG.obstacleSpawnRate === 0) {
         spawnObstacle();
     }
+    if (game.frameCount % 250 === 0) {
+        spawnPlatform();
+    }
     if (game.frameCount % 200 === 0) {
         spawnDecoration();
     }
+    
+    // Update platforms
+    game.platforms.forEach(platform => platform.update());
+    game.platforms = game.platforms.filter(platform => !platform.isOffScreen());
     
     // Update coins
     game.coins.forEach(coin => coin.update());
@@ -543,6 +903,7 @@ function update() {
     game.coins.forEach(coin => {
         if (!coin.collected && checkCollision(playerBounds, coin.getBounds())) {
             coin.collected = true;
+            playSound('coin');
             showPuzzle('coin');
         }
     });
@@ -561,6 +922,9 @@ function render() {
     
     // Draw decorations (behind everything)
     game.decorations.forEach(dec => dec.draw(game.ctx));
+    
+    // Draw platforms
+    game.platforms.forEach(platform => platform.draw(game.ctx));
     
     // Draw coins
     game.coins.forEach(coin => coin.draw(game.ctx));
@@ -693,6 +1057,11 @@ function setupMobileControls() {
 }
 
 function startGame() {
+    // Initialize audio on first user interaction
+    if (!game.audioCtx) {
+        initAudio();
+    }
+    
     // Get math settings
     game.mathMin = parseInt(document.getElementById('min-mult').value) || 1;
     game.mathMax = parseInt(document.getElementById('max-mult').value) || 12;
@@ -707,6 +1076,7 @@ function startGame() {
     game.frameCount = 0;
     game.coins = [];
     game.obstacles = [];
+    game.platforms = [];
     game.decorations = [];
     game.paused = false;
     game.keys = {};
