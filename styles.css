@@ -594,3 +594,211 @@ body.theme-snow {
 body.theme-beach {
     background: linear-gradient(135deg, #87ceeb 0%, #f4a460 100%);
 }
+
+/* ============================================
+   SIMPLIFIED PUZZLE MODAL
+   ============================================ */
+
+.puzzle-content {
+    padding: 30px 40px !important;
+    min-width: 280px !important;
+    max-width: 340px !important;
+}
+
+.puzzle-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    animation: iconPulse 1s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Coin challenge - green/gold theme */
+.puzzle-content.coin-challenge {
+    border: 4px solid #22c55e;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.3),
+                0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+.puzzle-content.coin-challenge .puzzle-icon {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+
+/* Obstacle challenge - red/danger theme */
+.puzzle-content.obstacle-challenge {
+    border: 4px solid #ef4444;
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.3),
+                0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+.puzzle-content.obstacle-challenge .puzzle-icon {
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
+}
+
+.puzzle-question {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.puzzle-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.puzzle-input-row input {
+    flex: 1;
+    margin-bottom: 0 !important;
+    font-size: 1.8rem !important;
+    padding: 15px !important;
+}
+
+.submit-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
+}
+
+.submit-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ============================================
+   SCREEN-WIDE ANSWER EFFECTS
+   ============================================ */
+
+.screen-effect {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.screen-effect.active {
+    opacity: 1;
+}
+
+/* Correct answer effects - theme specific */
+.screen-effect.correct {
+    animation: correctFlash 0.8s ease-out;
+}
+
+.screen-effect.correct.forest {
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.4) 0%, rgba(34, 139, 34, 0.2) 50%, transparent 70%);
+}
+
+.screen-effect.correct.snow {
+    background: radial-gradient(circle, rgba(147, 197, 253, 0.5) 0%, rgba(186, 230, 253, 0.3) 50%, transparent 70%);
+}
+
+.screen-effect.correct.beach {
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(245, 158, 11, 0.2) 50%, transparent 70%);
+}
+
+/* Wrong answer effects - theme specific */
+.screen-effect.wrong {
+    animation: wrongShake 0.6s ease-out;
+}
+
+.screen-effect.wrong.forest {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, rgba(127, 29, 29, 0.2) 50%, transparent 70%);
+}
+
+.screen-effect.wrong.snow {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, rgba(147, 51, 234, 0.2) 50%, transparent 70%);
+}
+
+.screen-effect.wrong.beach {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, rgba(220, 38, 38, 0.2) 50%, transparent 70%);
+}
+
+@keyframes correctFlash {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+}
+
+@keyframes wrongShake {
+    0%, 100% { 
+        opacity: 0;
+        transform: translateX(0);
+    }
+    10% { 
+        opacity: 1;
+        transform: translateX(-10px);
+    }
+    20% { transform: translateX(10px); }
+    30% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    50% { transform: translateX(-5px); }
+    60% { transform: translateX(5px); }
+    70% { 
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Floating particles for correct answer */
+.screen-effect.correct::before,
+.screen-effect.correct::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle, rgba(255,255,255,0.8) 2px, transparent 2px);
+    background-size: 60px 60px;
+    animation: sparkle 0.8s ease-out;
+}
+
+@keyframes sparkle {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+}

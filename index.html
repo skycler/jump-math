@@ -87,14 +87,17 @@
         </div>
 
         <div id="puzzle-modal" class="modal">
-            <div class="modal-content">
-                <h2 id="puzzle-title">Math Puzzle!</h2>
-                <p id="puzzle-question"></p>
-                <input type="number" id="puzzle-answer" placeholder="Your answer">
-                <button id="submit-answer">Submit</button>
-                <p id="puzzle-feedback"></p>
+            <div class="modal-content puzzle-content">
+                <div id="puzzle-icon" class="puzzle-icon">🪙</div>
+                <div id="puzzle-question" class="puzzle-question"></div>
+                <div class="puzzle-input-row">
+                    <input type="number" id="puzzle-answer" inputmode="numeric">
+                    <button id="submit-answer" class="submit-btn">✓</button>
+                </div>
             </div>
         </div>
+
+        <div id="screen-effect" class="screen-effect"></div>
 
         <div id="pause-modal" class="modal">
             <div class="modal-content">

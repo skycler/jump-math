@@ -20,61 +20,78 @@ const UI = {
         game.pendingPuzzle = this.generateMathPuzzle(game);
         
         const modal = document.getElementById('puzzle-modal');
-        const title = document.getElementById('puzzle-title');
+        const modalContent = modal.querySelector('.puzzle-content');
+        const icon = document.getElementById('puzzle-icon');
         const question = document.getElementById('puzzle-question');
         const answer = document.getElementById('puzzle-answer');
-        const feedback = document.getElementById('puzzle-feedback');
         
-        title.textContent = type === 'coin' ? '🪙 Coin Collected!' : '💥 Obstacle Hit!';
+        // Set icon and styling based on challenge type
+        if (type === 'coin') {
+            icon.textContent = '🪙';
+            modalContent.classList.remove('obstacle-challenge');
+            modalContent.classList.add('coin-challenge');
+        } else {
+            icon.textContent = '🛡️';
+            modalContent.classList.remove('coin-challenge');
+            modalContent.classList.add('obstacle-challenge');
+        }
+        
         question.textContent = game.pendingPuzzle.question;
         answer.value = '';
-        feedback.textContent = '';
-        feedback.className = '';
         
         modal.classList.add('active');
         answer.focus();
     },
 
+    // Trigger screen effect
+    triggerScreenEffect(isCorrect, theme) {
+        const effect = document.getElementById('screen-effect');
+        effect.className = 'screen-effect active';
+        effect.classList.add(isCorrect ? 'correct' : 'wrong');
+        effect.classList.add(theme);
+        
+        setTimeout(() => {
+            effect.className = 'screen-effect';
+        }, 800);
+    },
+
     // Check Puzzle Answer
     checkPuzzleAnswer(game) {
         const answerInput = document.getElementById('puzzle-answer');
-        const feedback = document.getElementById('puzzle-feedback');
         const userAnswer = parseInt(answerInput.value);
         
         if (isNaN(userAnswer)) {
-            feedback.textContent = 'Please enter a number!';
-            feedback.className = 'wrong';
+            // Shake the input to indicate error
+            answerInput.style.animation = 'none';
+            answerInput.offsetHeight; // Trigger reflow
+            answerInput.style.animation = 'wrongShake 0.4s ease';
             return;
         }
         
         const isCorrect = userAnswer === game.pendingPuzzle.answer;
         
+        // Trigger screen effect
+        this.triggerScreenEffect(isCorrect, game.theme);
+        
         if (game.puzzleType === 'coin') {
             if (isCorrect) {
                 game.score += 1;
-                feedback.textContent = '✅ Correct! +1 point';
-                feedback.className = 'correct';
                 Audio.play('pointEarned');
             } else {
-                feedback.textContent = `❌ Wrong! The answer was ${game.pendingPuzzle.answer}`;
-                feedback.className = 'wrong';
                 Audio.play('pointLost');
             }
         } else {
             if (isCorrect) {
-                feedback.textContent = '✅ Correct! No penalty';
-                feedback.className = 'correct';
                 Audio.play('pointEarned');
             } else {
                 game.score -= 1;
-                feedback.textContent = `❌ Wrong! -1 point. Answer was ${game.pendingPuzzle.answer}`;
-                feedback.className = 'wrong';
                 Audio.play('pointLost');
             }
         }
         
         this.updateScoreDisplay(game);
         
+        // Close modal immediately after effect starts
         setTimeout(() => {
             document.getElementById('puzzle-modal').classList.remove('active');
             game.paused = false;
@@ -87,7 +104,7 @@ const UI = {
             } else if (game.gameMode === 'target' && game.score >= game.targetScore) {
                 this.gameOver(game, true);
             }
-        }, 1500);
+        }, 300);
     },
 
     // Update Score Display
