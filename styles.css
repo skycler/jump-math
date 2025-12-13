@@ -599,6 +599,10 @@ body.theme-city {
     background: linear-gradient(135deg, #4a5568 0%, #1a202c 100%);
 }
 
+body.theme-sky {
+    background: linear-gradient(135deg, #87CEEB 0%, #4A90D9 100%);
+}
+
 /* ============================================
    SIMPLIFIED PUZZLE MODAL
    ============================================ */
@@ -730,6 +734,10 @@ body.theme-city {
     background: radial-gradient(circle, rgba(246, 224, 94, 0.5) 0%, rgba(236, 201, 75, 0.3) 50%, transparent 70%);
 }
 
+.screen-effect.correct.sky {
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.5) 0%, rgba(135, 206, 235, 0.3) 50%, transparent 70%);
+}
+
 /* Wrong answer effects - theme specific */
 .screen-effect.wrong {
     animation: wrongShake 0.6s ease-out;
@@ -749,6 +757,11 @@ body.theme-city {
 
 .screen-effect.wrong.city {
     background: radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, rgba(113, 128, 150, 0.2) 50%, transparent 70%);
+}
+
+.screen-effect.wrong.sky {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, rgba(100, 100, 100, 0.3) 50%, transparent 70%);
+}
 }
 
 @keyframes correctFlash {

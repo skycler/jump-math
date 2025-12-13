@@ -77,5 +77,21 @@ const THEMES = {
             dynamicTypes: ['taxi', 'pigeon']
         },
         decorations: ['building', 'streetlamp']
+    },
+    sky: {
+        name: 'Sky',
+        sky: ['#87CEEB', '#4A90D9'],
+        ground: '#b8d4e8',
+        groundTop: '#ffffff',
+        player: '#FF6B35',
+        coin: '#FFD700',
+        platform: { top: '#ffffff', bottom: '#d0e8f5' },
+        obstacles: {
+            static: ['#ffb6c1', '#98d8c8'],
+            dynamic: '#666666',
+            staticType: 'cloudObstacle',
+            dynamicTypes: ['airplane', 'co2']
+        },
+        decorations: ['sun', 'cloudDecoration']
     }
 };

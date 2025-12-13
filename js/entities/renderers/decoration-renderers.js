@@ -267,6 +267,75 @@ class StreetlampRenderer extends DecorationRenderer {
 }
 
 // ============================================
+// HIMMEL (SKY) DECORATIONS
+// ============================================
+
+class SunRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY, animOffset = 0) {
+        const sunY = groundY - 150;
+        const pulse = Math.sin(animOffset * 2) * 5;
+        
+        // Outer glow
+        const gradient = ctx.createRadialGradient(x, sunY, 20, x, sunY, 60 + pulse);
+        gradient.addColorStop(0, 'rgba(255, 223, 0, 0.8)');
+        gradient.addColorStop(0.5, 'rgba(255, 180, 0, 0.3)');
+        gradient.addColorStop(1, 'rgba(255, 180, 0, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, sunY, 60 + pulse, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Sun body
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(x, sunY, 35, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner highlight
+        ctx.fillStyle = '#FFF8DC';
+        ctx.beginPath();
+        ctx.arc(x - 10, sunY - 10, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Rays
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 3;
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 + animOffset;
+            const innerR = 40;
+            const outerR = 55 + pulse;
+            ctx.beginPath();
+            ctx.moveTo(x + Math.cos(angle) * innerR, sunY + Math.sin(angle) * innerR);
+            ctx.lineTo(x + Math.cos(angle) * outerR, sunY + Math.sin(angle) * outerR);
+            ctx.stroke();
+        }
+    }
+}
+
+class CloudDecorationRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY, animOffset = 0) {
+        const cloudY = groundY - 80 - (animOffset * 20);
+        const drift = Math.sin(animOffset * 3) * 5;
+        
+        // White fluffy cloud
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.beginPath();
+        ctx.arc(x + drift, cloudY, 25, 0, Math.PI * 2);
+        ctx.arc(x + 25 + drift, cloudY + 5, 20, 0, Math.PI * 2);
+        ctx.arc(x - 20 + drift, cloudY + 5, 18, 0, Math.PI * 2);
+        ctx.arc(x + 10 + drift, cloudY - 10, 15, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+        ctx.beginPath();
+        ctx.arc(x - 5 + drift, cloudY - 5, 10, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+// ============================================
 // DECORATION RENDERER FACTORY
 // ============================================
 
@@ -320,6 +389,14 @@ const DecorationRendererFactory = {
                 renderer = new StreetlampRenderer();
                 break;
             
+            // Himmel (Sky)
+            case 'sun':
+                renderer = new SunRenderer();
+                break;
+            case 'cloudDecoration':
+                renderer = new CloudDecorationRenderer();
+                break;
+            
             default:
                 console.warn(`Unknown decoration type: ${type}`);
                 return null;
@@ -333,7 +410,7 @@ const DecorationRendererFactory = {
      * Get all available decoration types
      */
     getAvailableTypes() {
-        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella', 'building', 'streetlamp'];
+        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella', 'building', 'streetlamp', 'sun', 'cloudDecoration'];
     },
     
     /**
@@ -344,7 +421,8 @@ const DecorationRendererFactory = {
             forest: ['tree', 'bush'],
             snow: ['pine', 'snowman'],
             beach: ['palm', 'umbrella'],
-            city: ['building', 'streetlamp']
+            city: ['building', 'streetlamp'],
+            sky: ['sun', 'cloudDecoration']
         };
         return themeDecorations[theme] || [];
     }

@@ -569,6 +569,134 @@ class PigeonRenderer extends ObstacleRenderer {
 }
 
 // ============================================
+// HIMMEL (SKY) OBSTACLE RENDERERS
+// ============================================
+
+class CloudObstacleRenderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height) {
+        // Colorful cloud obstacle
+        const colors = ['#ffb6c1', '#98d8c8', '#b19cd9', '#ffd700'];
+        const color = colors[Math.floor((x * 3) % colors.length)];
+        
+        ctx.fillStyle = color;
+        
+        // Main cloud body
+        ctx.beginPath();
+        ctx.arc(x + width * 0.3, y + height * 0.6, height * 0.4, 0, Math.PI * 2);
+        ctx.arc(x + width * 0.5, y + height * 0.4, height * 0.5, 0, Math.PI * 2);
+        ctx.arc(x + width * 0.7, y + height * 0.6, height * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath();
+        ctx.arc(x + width * 0.4, y + height * 0.35, height * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+class AirplaneRenderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height, frameCount) {
+        const centerX = x + width/2;
+        const centerY = y + height/2;
+        const wobble = Math.sin(frameCount * 0.1) * 2;
+        
+        // Fuselage (body)
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY + wobble, width/2 + 5, height/4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Nose
+        ctx.beginPath();
+        ctx.moveTo(x - 10, centerY + wobble);
+        ctx.lineTo(x + 5, centerY - 5 + wobble);
+        ctx.lineTo(x + 5, centerY + 5 + wobble);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Wings
+        ctx.fillStyle = '#cbd5e0';
+        ctx.beginPath();
+        ctx.moveTo(centerX - 5, centerY + wobble);
+        ctx.lineTo(centerX - 15, centerY - height/2 - 5 + wobble);
+        ctx.lineTo(centerX + 10, centerY - height/2 + wobble);
+        ctx.lineTo(centerX + 5, centerY + wobble);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(centerX - 5, centerY + wobble);
+        ctx.lineTo(centerX - 15, centerY + height/2 + 5 + wobble);
+        ctx.lineTo(centerX + 10, centerY + height/2 + wobble);
+        ctx.lineTo(centerX + 5, centerY + wobble);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Tail
+        ctx.fillStyle = '#a0aec0';
+        ctx.beginPath();
+        ctx.moveTo(x + width - 5, centerY + wobble);
+        ctx.lineTo(x + width + 10, centerY - 12 + wobble);
+        ctx.lineTo(x + width + 5, centerY + wobble);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Windows
+        ctx.fillStyle = '#63b3ed';
+        for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.arc(x + 15 + i * 10, centerY - 2 + wobble, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Engine trail
+        ctx.fillStyle = 'rgba(200, 200, 200, 0.4)';
+        ctx.beginPath();
+        ctx.moveTo(x + width, centerY + wobble);
+        ctx.lineTo(x + width + 20, centerY - 3 + wobble);
+        ctx.lineTo(x + width + 20, centerY + 3 + wobble);
+        ctx.closePath();
+        ctx.fill();
+    }
+}
+
+class CO2Renderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height, frameCount) {
+        const centerX = x + width/2;
+        const centerY = y + height/2;
+        const pulse = Math.sin(frameCount * 0.15) * 3;
+        
+        // Gray smoke cloud
+        ctx.fillStyle = 'rgba(100, 100, 100, 0.7)';
+        ctx.beginPath();
+        ctx.arc(centerX - 8, centerY + pulse, 12, 0, Math.PI * 2);
+        ctx.arc(centerX + 8, centerY - pulse, 14, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY - 5, 10, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Darker core
+        ctx.fillStyle = 'rgba(70, 70, 70, 0.8)';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // CO2 text
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('CO₂', centerX, centerY);
+        
+        // Warning outline
+        ctx.strokeStyle = '#e53e3e';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, width/2 - 2, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+}
+
+// ============================================
 // OBSTACLE RENDERER FACTORY
 // ============================================
 
@@ -633,6 +761,17 @@ const ObstacleRendererFactory = {
                 renderer = new PigeonRenderer();
                 break;
             
+            // Himmel (Sky) obstacles
+            case 'cloudObstacle':
+                renderer = new CloudObstacleRenderer();
+                break;
+            case 'airplane':
+                renderer = new AirplaneRenderer();
+                break;
+            case 'co2':
+                renderer = new CO2Renderer();
+                break;
+            
             // Fallbacks with theme colors
             default:
                 if (theme) {
@@ -650,7 +789,7 @@ const ObstacleRendererFactory = {
      * Get a static obstacle renderer
      */
     getStaticRenderer(type, theme) {
-        if (type === 'log' || type === 'ice' || type === 'sandcastle' || type === 'trashcan') {
+        if (type === 'log' || type === 'ice' || type === 'sandcastle' || type === 'trashcan' || type === 'cloudObstacle') {
             return this.getRenderer(type, theme);
         }
         // Default static with theme colors

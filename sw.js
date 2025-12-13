@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jump-math-v8';
+const CACHE_NAME = 'jump-math-v9';
 const ASSETS = [
     './',
     './index.html',
