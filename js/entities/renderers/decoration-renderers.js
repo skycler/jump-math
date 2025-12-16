@@ -336,6 +336,142 @@ class CloudDecorationRenderer extends DecorationRenderer {
 }
 
 // ============================================
+// UNDERWATER DECORATIONS
+// ============================================
+
+class SubmarineRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY, animOffset = 0) {
+        const subY = groundY - 80;
+        const bob = Math.sin(animOffset * 1.5) * 3;
+        const scale = 1.5; // Make it 50% larger
+        
+        // Main body - lighter yellow
+        ctx.fillStyle = '#FFE84D';
+        ctx.beginPath();
+        ctx.ellipse(x, subY + bob, 50 * scale, 20 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Conning tower - lighter orange
+        ctx.fillStyle = '#FFB84D';
+        ctx.beginPath();
+        ctx.rect(x - 10 * scale, subY - 15 * scale + bob, 20 * scale, 15 * scale);
+        ctx.fill();
+        
+        // Periscope - lighter
+        ctx.strokeStyle = '#E6A73C';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x, subY - 15 * scale + bob);
+        ctx.lineTo(x, subY - 35 * scale + bob);
+        ctx.stroke();
+        
+        // Periscope top
+        ctx.fillStyle = '#E6A73C';
+        ctx.beginPath();
+        ctx.arc(x, subY - 35 * scale + bob, 5 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Windows (portholes) - lighter blue
+        ctx.fillStyle = '#8FC9F5';
+        ctx.strokeStyle = '#E6A73C';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.arc(x - 25 * scale + i * 20 * scale, subY + bob, 7 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        // Propeller
+        ctx.fillStyle = '#E6A73C';
+        const propAngle = animOffset * 5;
+        ctx.save();
+        ctx.translate(x + 55 * scale, subY + bob);
+        ctx.rotate(propAngle);
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.rotate((Math.PI * 2) / 3);
+            ctx.ellipse(0, 0, 10 * scale, 4 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+        
+        // Bubbles - larger
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        for (let i = 0; i < 3; i++) {
+            const bubbleY = subY - 40 * scale - (animOffset * 10 + i * 15) % 40 + bob;
+            ctx.beginPath();
+            ctx.arc(x + 2, bubbleY, 4 * scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
+class WreckRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY) {
+        const scale = 1.6; // Make it 60% larger
+        
+        // Ship hull - much lighter brown
+        ctx.fillStyle = '#8B6F47';
+        ctx.beginPath();
+        ctx.moveTo(x - 40 * scale, groundY);
+        ctx.lineTo(x - 30 * scale, groundY - 30 * scale);
+        ctx.lineTo(x + 30 * scale, groundY - 30 * scale);
+        ctx.lineTo(x + 40 * scale, groundY);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Deck - lighter
+        ctx.fillStyle = '#A0826D';
+        ctx.fillRect(x - 30 * scale, groundY - 30 * scale, 60 * scale, 10 * scale);
+        
+        // Broken mast - lighter
+        ctx.fillStyle = '#6B5344';
+        ctx.fillRect(x - 6 * scale, groundY - 70 * scale, 10 * scale, 40 * scale);
+        
+        // Mast broken top
+        ctx.save();
+        ctx.translate(x, groundY - 65 * scale);
+        ctx.rotate(0.5);
+        ctx.fillRect(-5 * scale, 0, 10 * scale, 25 * scale);
+        ctx.restore();
+        
+        // Holes in hull - lighter
+        ctx.fillStyle = '#4A6A7A';
+        ctx.beginPath();
+        ctx.arc(x - 15 * scale, groundY - 18 * scale, 6 * scale, 0, Math.PI * 2);
+        ctx.arc(x + 10 * scale, groundY - 24 * scale, 7 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Seaweed growing on wreck - lighter green
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 4;
+        for (let i = 0; i < 5; i++) {
+            const weedX = x - 35 * scale + i * 18 * scale;
+            ctx.beginPath();
+            ctx.moveTo(weedX, groundY);
+            ctx.quadraticCurveTo(
+                weedX + 6, groundY - 12 * scale,
+                weedX + 3, groundY - 25 * scale
+            );
+            ctx.stroke();
+        }
+        
+        // Barnacles - deterministic positions based on x, lighter
+        ctx.fillStyle = '#A0AEC0';
+        for (let i = 0; i < 8; i++) {
+            const seed = (x + i * 41) % 100 / 100;
+            const seed2 = (x + i * 67) % 100 / 100;
+            const barnacleX = x - 30 * scale + seed * 60 * scale;
+            const barnacleY = groundY - seed2 * 30 * scale;
+            ctx.beginPath();
+            ctx.arc(barnacleX, barnacleY, 3 * scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
+// ============================================
 // DECORATION RENDERER FACTORY
 // ============================================
 
@@ -397,6 +533,14 @@ const DecorationRendererFactory = {
                 renderer = new CloudDecorationRenderer();
                 break;
             
+            // Underwater
+            case 'submarine':
+                renderer = new SubmarineRenderer();
+                break;
+            case 'wreck':
+                renderer = new WreckRenderer();
+                break;
+            
             default:
                 console.warn(`Unknown decoration type: ${type}`);
                 return null;
@@ -410,7 +554,7 @@ const DecorationRendererFactory = {
      * Get all available decoration types
      */
     getAvailableTypes() {
-        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella', 'building', 'streetlamp', 'sun', 'cloudDecoration'];
+        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella', 'building', 'streetlamp', 'sun', 'cloudDecoration', 'submarine', 'wreck'];
     },
     
     /**
@@ -422,7 +566,8 @@ const DecorationRendererFactory = {
             snow: ['pine', 'snowman'],
             beach: ['palm', 'umbrella'],
             city: ['building', 'streetlamp'],
-            sky: ['sun', 'cloudDecoration']
+            sky: ['sun', 'cloudDecoration'],
+            underwater: ['submarine', 'wreck']
         };
         return themeDecorations[theme] || [];
     }

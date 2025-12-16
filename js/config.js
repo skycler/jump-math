@@ -93,5 +93,21 @@ const THEMES = {
             dynamicTypes: ['airplane', 'co2']
         },
         decorations: ['sun', 'cloudDecoration']
+    },
+    underwater: {
+        name: 'Underwater',
+        sky: ['#006994', '#003d5c'],
+        ground: '#1a2a3a',
+        groundTop: '#3a5a7a',
+        player: '#FF6B35',
+        coin: '#FFD700',
+        platform: { top: '#4a7a9a', bottom: '#2a4a6a' },
+        obstacles: {
+            static: ['#FF6B9D', '#FF8FB3'],
+            dynamic: '#708090',
+            staticType: 'coral',
+            dynamicTypes: ['shark', 'jellyfish']
+        },
+        decorations: ['submarine', 'wreck']
     }
 };

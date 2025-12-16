@@ -94,6 +94,58 @@ class SandcastleRenderer extends ObstacleRenderer {
     }
 }
 
+class CoralRenderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height) {
+        // Coral base
+        ctx.fillStyle = '#FF6B9D';
+        
+        // Draw coral branches
+        const branchCount = 3;
+        for (let i = 0; i < branchCount; i++) {
+            const branchX = x + (i * width / (branchCount - 1));
+            const branchWidth = width / (branchCount + 1);
+            const branchHeight = height * (0.7 + Math.sin(i) * 0.2);
+            
+            // Main branch
+            ctx.beginPath();
+            ctx.moveTo(branchX, y + height);
+            ctx.quadraticCurveTo(
+                branchX + branchWidth * 0.3, 
+                y + height - branchHeight * 0.5,
+                branchX + branchWidth * 0.2, 
+                y + height - branchHeight
+            );
+            ctx.lineTo(branchX - branchWidth * 0.2, y + height - branchHeight);
+            ctx.quadraticCurveTo(
+                branchX - branchWidth * 0.3, 
+                y + height - branchHeight * 0.5,
+                branchX, 
+                y + height
+            );
+            ctx.fill();
+            
+            // Branch tips
+            ctx.fillStyle = '#FF8FB3';
+            ctx.beginPath();
+            ctx.arc(branchX, y + height - branchHeight, branchWidth * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FF6B9D';
+        }
+        
+        // Add polyps (small circles) - deterministic positions based on x
+        ctx.fillStyle = '#FFB3D9';
+        for (let i = 0; i < 5; i++) {
+            const seed = (x + i * 37) % 100 / 100;
+            const seed2 = (x + i * 73) % 100 / 100;
+            const px = x + seed * width;
+            const py = y + height * 0.3 + seed2 * height * 0.5;
+            ctx.beginPath();
+            ctx.arc(px, py, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
 class DefaultStaticRenderer extends ObstacleRenderer {
     constructor(colors) {
         super();
@@ -697,6 +749,86 @@ class CO2Renderer extends ObstacleRenderer {
 }
 
 // ============================================
+// UNDERWATER OBSTACLE RENDERERS
+// ============================================
+
+class SharkRenderer extends ObstacleRenderer {
+    draw(ctx, x, y, width, height, frameCount) {
+        const centerX = x + width/2;
+        const centerY = y + height/2;
+        const swim = Math.sin(frameCount * 0.15) * 2;
+        
+        // Body
+        ctx.fillStyle = '#708090';
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY + swim, width/2, height/2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Head/nose
+        ctx.beginPath();
+        ctx.moveTo(x - 15, centerY + swim);
+        ctx.lineTo(x, centerY - height/3 + swim);
+        ctx.lineTo(x + 10, centerY + swim);
+        ctx.lineTo(x, centerY + height/3 + swim);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Dorsal fin
+        ctx.beginPath();
+        ctx.moveTo(centerX - 5, centerY - height/2.5 + swim);
+        ctx.lineTo(centerX, centerY - height/2 - 15 + swim);
+        ctx.lineTo(centerX + 10, centerY - height/2.5 + swim);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Tail
+        ctx.beginPath();
+        ctx.moveTo(x + width - 5, centerY + swim);
+        ctx.lineTo(x + width + 15, centerY - 12 + swim);
+        ctx.lineTo(x + width + 10, centerY + swim);
+        ctx.lineTo(x + width + 15, centerY + 12 + swim);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Pectoral fin
+        ctx.fillStyle = '#5a6a7a';
+        ctx.beginPath();
+        ctx.moveTo(centerX - 5, centerY + height/4 + swim);
+        ctx.lineTo(centerX - 15, centerY + height/2 + 10 + swim);
+        ctx.lineTo(centerX + 5, centerY + height/3 + swim);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Eye
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(x + 5, centerY - height/4 + swim, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Gills
+        ctx.strokeStyle = '#4a5a6a';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(x + 20 + i * 8, centerY - 5 + swim);
+            ctx.lineTo(x + 18 + i * 8, centerY + 8 + swim);
+            ctx.stroke();
+        }
+        
+        // Teeth
+        ctx.fillStyle = '#fff';
+        for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.moveTo(x - 10 + i * 4, centerY + swim);
+            ctx.lineTo(x - 8 + i * 4, centerY - 4 + swim);
+            ctx.lineTo(x - 6 + i * 4, centerY + swim);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+}
+
+// ============================================
 // OBSTACLE RENDERER FACTORY
 // ============================================
 
@@ -729,6 +861,9 @@ const ObstacleRendererFactory = {
             case 'sandcastle':
                 renderer = new SandcastleRenderer();
                 break;
+            case 'coral':
+                renderer = new CoralRenderer();
+                break;
             
             // Dynamic obstacles
             case 'bee':
@@ -748,6 +883,9 @@ const ObstacleRendererFactory = {
                 break;
             case 'jellyfish':
                 renderer = new JellyfishRenderer();
+                break;
+            case 'shark':
+                renderer = new SharkRenderer();
                 break;
             
             // City obstacles
@@ -789,7 +927,7 @@ const ObstacleRendererFactory = {
      * Get a static obstacle renderer
      */
     getStaticRenderer(type, theme) {
-        if (type === 'log' || type === 'ice' || type === 'sandcastle' || type === 'trashcan' || type === 'cloudObstacle') {
+        if (type === 'log' || type === 'ice' || type === 'sandcastle' || type === 'trashcan' || type === 'cloudObstacle' || type === 'coral') {
             return this.getRenderer(type, theme);
         }
         // Default static with theme colors
