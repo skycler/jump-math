@@ -336,6 +336,137 @@ class CloudDecorationRenderer extends DecorationRenderer {
 }
 
 // ============================================
+// UNDERWATER DECORATIONS
+// ============================================
+
+class SubmarineRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY, animOffset = 0) {
+        const subY = groundY - 60;
+        const bob = Math.sin(animOffset * 1.5) * 3;
+        
+        // Main body
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.ellipse(x, subY + bob, 50, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Conning tower
+        ctx.fillStyle = '#FFA500';
+        ctx.beginPath();
+        ctx.rect(x - 10, subY - 15 + bob, 20, 15);
+        ctx.fill();
+        
+        // Periscope
+        ctx.strokeStyle = '#CC8400';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x, subY - 15 + bob);
+        ctx.lineTo(x, subY - 35 + bob);
+        ctx.stroke();
+        
+        // Periscope top
+        ctx.fillStyle = '#CC8400';
+        ctx.beginPath();
+        ctx.arc(x, subY - 35 + bob, 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Windows (portholes)
+        ctx.fillStyle = '#63b3ed';
+        ctx.strokeStyle = '#CC8400';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.arc(x - 25 + i * 20, subY + bob, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        // Propeller
+        ctx.fillStyle = '#CC8400';
+        const propAngle = animOffset * 5;
+        ctx.save();
+        ctx.translate(x + 55, subY + bob);
+        ctx.rotate(propAngle);
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.rotate((Math.PI * 2) / 3);
+            ctx.ellipse(0, 0, 8, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+        
+        // Bubbles
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        for (let i = 0; i < 3; i++) {
+            const bubbleY = subY - 40 - (animOffset * 10 + i * 15) % 40 + bob;
+            ctx.beginPath();
+            ctx.arc(x + 2, bubbleY, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
+class WreckRenderer extends DecorationRenderer {
+    draw(ctx, x, groundY) {
+        // Ship hull
+        ctx.fillStyle = '#5D4037';
+        ctx.beginPath();
+        ctx.moveTo(x - 40, groundY);
+        ctx.lineTo(x - 30, groundY - 30);
+        ctx.lineTo(x + 30, groundY - 30);
+        ctx.lineTo(x + 40, groundY);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Deck
+        ctx.fillStyle = '#4a342a';
+        ctx.fillRect(x - 30, groundY - 30, 60, 8);
+        
+        // Broken mast
+        ctx.fillStyle = '#3d2817';
+        ctx.fillRect(x - 5, groundY - 60, 8, 30);
+        
+        // Mast broken top
+        ctx.save();
+        ctx.translate(x, groundY - 55);
+        ctx.rotate(0.5);
+        ctx.fillRect(-4, 0, 8, 20);
+        ctx.restore();
+        
+        // Holes in hull
+        ctx.fillStyle = '#1a2a3a';
+        ctx.beginPath();
+        ctx.arc(x - 15, groundY - 15, 5, 0, Math.PI * 2);
+        ctx.arc(x + 10, groundY - 20, 6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Seaweed growing on wreck
+        ctx.strokeStyle = '#2E7D32';
+        ctx.lineWidth = 3;
+        for (let i = 0; i < 4; i++) {
+            const weedX = x - 30 + i * 20;
+            ctx.beginPath();
+            ctx.moveTo(weedX, groundY);
+            ctx.quadraticCurveTo(
+                weedX + 5, groundY - 10,
+                weedX + 2, groundY - 20
+            );
+            ctx.stroke();
+        }
+        
+        // Barnacles
+        ctx.fillStyle = '#808080';
+        for (let i = 0; i < 6; i++) {
+            const barnacleX = x - 25 + Math.random() * 50;
+            const barnacleY = groundY - Math.random() * 25;
+            ctx.beginPath();
+            ctx.arc(barnacleX, barnacleY, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
+// ============================================
 // DECORATION RENDERER FACTORY
 // ============================================
 
@@ -397,6 +528,14 @@ const DecorationRendererFactory = {
                 renderer = new CloudDecorationRenderer();
                 break;
             
+            // Underwater
+            case 'submarine':
+                renderer = new SubmarineRenderer();
+                break;
+            case 'wreck':
+                renderer = new WreckRenderer();
+                break;
+            
             default:
                 console.warn(`Unknown decoration type: ${type}`);
                 return null;
@@ -410,7 +549,7 @@ const DecorationRendererFactory = {
      * Get all available decoration types
      */
     getAvailableTypes() {
-        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella', 'building', 'streetlamp', 'sun', 'cloudDecoration'];
+        return ['tree', 'bush', 'pine', 'snowman', 'palm', 'umbrella', 'building', 'streetlamp', 'sun', 'cloudDecoration', 'submarine', 'wreck'];
     },
     
     /**
@@ -422,7 +561,8 @@ const DecorationRendererFactory = {
             snow: ['pine', 'snowman'],
             beach: ['palm', 'umbrella'],
             city: ['building', 'streetlamp'],
-            sky: ['sun', 'cloudDecoration']
+            sky: ['sun', 'cloudDecoration'],
+            underwater: ['submarine', 'wreck']
         };
         return themeDecorations[theme] || [];
     }
