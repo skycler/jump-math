@@ -132,11 +132,13 @@ class CoralRenderer extends ObstacleRenderer {
             ctx.fillStyle = '#FF6B9D';
         }
         
-        // Add polyps (small circles)
+        // Add polyps (small circles) - deterministic positions based on x
         ctx.fillStyle = '#FFB3D9';
         for (let i = 0; i < 5; i++) {
-            const px = x + Math.random() * width;
-            const py = y + height * 0.3 + Math.random() * height * 0.5;
+            const seed = (x + i * 37) % 100 / 100;
+            const seed2 = (x + i * 73) % 100 / 100;
+            const px = x + seed * width;
+            const py = y + height * 0.3 + seed2 * height * 0.5;
             ctx.beginPath();
             ctx.arc(px, py, 2, 0, Math.PI * 2);
             ctx.fill();

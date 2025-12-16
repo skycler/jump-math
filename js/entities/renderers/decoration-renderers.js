@@ -454,11 +454,13 @@ class WreckRenderer extends DecorationRenderer {
             ctx.stroke();
         }
         
-        // Barnacles
+        // Barnacles - deterministic positions based on x
         ctx.fillStyle = '#808080';
         for (let i = 0; i < 6; i++) {
-            const barnacleX = x - 25 + Math.random() * 50;
-            const barnacleY = groundY - Math.random() * 25;
+            const seed = (x + i * 41) % 100 / 100;
+            const seed2 = (x + i * 67) % 100 / 100;
+            const barnacleX = x - 25 + seed * 50;
+            const barnacleY = groundY - seed2 * 25;
             ctx.beginPath();
             ctx.arc(barnacleX, barnacleY, 2, 0, Math.PI * 2);
             ctx.fill();
